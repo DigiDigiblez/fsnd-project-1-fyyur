@@ -4,3 +4,4 @@ flask-moment
 flask-wtf
 flask
 flask-sqlalchemy
+flask-migrate

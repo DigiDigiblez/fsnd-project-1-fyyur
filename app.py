@@ -8,9 +8,9 @@ from logging import Formatter, FileHandler
 import babel
 import dateutil.parser
 from flask import Flask, render_template, request, flash, redirect, url_for
-from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_moment import Moment
+from models.database import db
 
 # ----------------------------------------------------------------------------#
 # App Config.
@@ -19,46 +19,15 @@ from flask_migrate import Migrate
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
 
-# TODO: connect to a local postgresql database ✅
-migrate = Migrate(app, db)
+# ✅ TODO: connect to a local postgresql database
+db.init_app(app)
 
-# ----------------------------------------------------------------------------#
-# Models.
-# ----------------------------------------------------------------------------#
+from models.venue import Venue
+from models.artist import Artist
+from models.show import Show
 
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+Migrate(app, db)
 
 # ----------------------------------------------------------------------------#
 # Filters.
@@ -85,8 +54,9 @@ def index():
     return render_template('pages/home.html')
 
 
+# ----------------------------------------------------------------------------#
 #  Venues
-#  ----------------------------------------------------------------
+# ----------------------------------------------------------------------------#
 
 @app.route('/venues')
 def venues():

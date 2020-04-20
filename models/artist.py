@@ -17,3 +17,10 @@ class Artist(db.Model):
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
+
+    @property
+    def artist_basic_data(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+        }

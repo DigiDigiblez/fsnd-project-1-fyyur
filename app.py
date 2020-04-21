@@ -11,6 +11,8 @@ import dateutil.parser
 from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_migrate import Migrate
 from flask_moment import Moment
+
+from forms import ShowForm
 from models.models import Show
 from models.models import Venue
 from models.models import Artist
@@ -438,7 +440,7 @@ def create_artist_submission():
 def shows():
     # ✅ TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
-    all_shows = Show.query.all()
+    all_shows = Show.query.order_by('start_time').all()
     upcoming_shows = []
 
     for show in all_shows:
@@ -474,14 +476,34 @@ def create_shows():
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
-    # called to create new shows in the db, upon submitting new show listing form
-    # TODO: insert form data as a new Show record in the db, instead
+    # ✅ TODO: insert form data as a new Show record in the db, instead
+    error = False
+    try:
+        # Retrieving form data
+        artist_id = request.form.get("artist_id")
+        venue_id = request.form.get("venue_id")
+        start_time = request.form.get("start_time")
 
-    # on successful db insert, flash success
-    flash('Show was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Show could not be listed.')
-    # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+        # Creating new db Show record.
+        new_show = Show(
+            artist_id=artist_id,
+            venue_id=venue_id,
+            start_time=start_time
+        )
+
+        db.session.add(new_show)
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+    finally:
+        if not error:
+            flash("Show was successfully listed!")
+        else:
+            # ✅ TODO: on unsuccessful db insert, flash an error instead.
+            flash("An error occurred. Show could not be listed.")
+        db.session.close()
+
     return render_template('pages/home.html')
 
 

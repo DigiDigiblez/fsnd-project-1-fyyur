@@ -10,11 +10,15 @@ import dateutil.parser
 from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_migrate import Migrate
 from flask_moment import Moment
+from models.models import Show
+from models.models import Venue
+from models.models import Artist
 from models.database import db
 
 # ----------------------------------------------------------------------------#
 # App Config.
 # ----------------------------------------------------------------------------#
+
 
 app = Flask(__name__)
 moment = Moment(app)
@@ -22,10 +26,6 @@ app.config.from_object('config')
 
 # ✅ TODO: connect to a local postgresql database
 db.init_app(app)
-
-from models.venue import Venue
-from models.artist import Artist
-from models.show import Show
 
 Migrate(app, db)
 
@@ -234,11 +234,18 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
     # ✅ TODO: replace with real data returned from querying the database
-    artists = Artist.query.all()
+    all_artists = Artist.query.all()
+    basic_artist_details = []
 
-    data = [artist.artist_basic_data for artist in artists]
+    for artist in all_artists:
+        basic_artist_details.append(
+            {
+                "id": artist.id,
+                "name": artist.name,
+            }
+        )
 
-    return render_template('pages/artists.html', artists=data)
+    return render_template('pages/artists.html', artists=basic_artist_details)
 
 
 @app.route('/artists/search', methods=['POST'])
@@ -422,46 +429,28 @@ def create_artist_submission():
 
 @app.route('/shows')
 def shows():
-    # displays list of shows at /shows
-    # TODO: replace with real venues data.
+    # ✅ TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
-    data = [{
-        "venue_id": 1,
-        "venue_name": "The Musical Hop",
-        "artist_id": 4,
-        "artist_name": "Guns N Petals",
-        "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-        "start_time": "2019-05-21T21:30:00.000Z"
-    }, {
-        "venue_id": 3,
-        "venue_name": "Park Square Live Music & Coffee",
-        "artist_id": 5,
-        "artist_name": "Matt Quevedo",
-        "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-        "start_time": "2019-06-15T23:00:00.000Z"
-    }, {
-        "venue_id": 3,
-        "venue_name": "Park Square Live Music & Coffee",
-        "artist_id": 6,
-        "artist_name": "The Wild Sax Band",
-        "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        "start_time": "2035-04-01T20:00:00.000Z"
-    }, {
-        "venue_id": 3,
-        "venue_name": "Park Square Live Music & Coffee",
-        "artist_id": 6,
-        "artist_name": "The Wild Sax Band",
-        "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        "start_time": "2035-04-08T20:00:00.000Z"
-    }, {
-        "venue_id": 3,
-        "venue_name": "Park Square Live Music & Coffee",
-        "artist_id": 6,
-        "artist_name": "The Wild Sax Band",
-        "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        "start_time": "2035-04-15T20:00:00.000Z"
-    }]
-    return render_template('pages/shows.html', shows=data)
+    all_shows = Show.query.all()
+    upcoming_shows = []
+
+    for show in all_shows:
+        artist = Artist.query.filter(Artist.id == show.artist_id).one()
+        venue = Venue.query.filter(Venue.id == show.venue_id).one()
+
+        upcoming_shows.append(
+            {
+                "id": show.id,
+                "start_time": show.start_time.strftime("%m/%d/%Y, %H:%M:%S"),
+                "venue": venue.id,
+                "venue_name": venue.name,
+                "artist": artist.id,
+                "artist_name": artist.name,
+                "artist_image_link": artist.image_link
+            }
+        )
+
+    return render_template('pages/shows.html', shows=upcoming_shows)
 
 
 @app.route('/shows/create')

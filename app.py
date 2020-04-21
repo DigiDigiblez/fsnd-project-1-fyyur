@@ -5,7 +5,7 @@
 import logging
 from logging import Formatter, FileHandler
 
-import babel
+import babel.dates
 import dateutil.parser
 from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_migrate import Migrate
@@ -29,6 +29,7 @@ from models.show import Show
 
 Migrate(app, db)
 
+
 # ----------------------------------------------------------------------------#
 # Filters.
 # ----------------------------------------------------------------------------#
@@ -39,7 +40,7 @@ def format_datetime(value, format='medium'):
         format = "EEEE MMMM, d, y 'at' h:mma"
     elif format == 'medium':
         format = "EE MM, dd, y h:mma"
-    return babel.dates.format_datetime(date, format)
+    return babel.dates.format_datetime(date, format, locale='en')
 
 
 app.jinja_env.filters['datetime'] = format_datetime

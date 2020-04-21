@@ -3,6 +3,7 @@
 # ----------------------------------------------------------------------------#
 
 import logging
+from datetime import datetime
 from logging import Formatter, FileHandler
 
 import babel.dates
@@ -61,30 +62,36 @@ def index():
 
 @app.route('/venues')
 def venues():
-    # TODO: replace with real venues data.
+    # ✅ TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
-    data = [{
-        "city": "San Francisco",
-        "state": "CA",
-        "venues": [{
-            "id": 1,
-            "name": "The Musical Hop",
-            "num_upcoming_shows": 0,
-        }, {
-            "id": 3,
-            "name": "Park Square Live Music & Coffee",
-            "num_upcoming_shows": 1,
-        }]
-    }, {
-        "city": "New York",
-        "state": "NY",
-        "venues": [{
-            "id": 2,
-            "name": "The Dueling Pianos Bar",
-            "num_upcoming_shows": 0,
-        }]
-    }]
-    return render_template('pages/venues.html', areas=data);
+    territories = (
+        Venue
+            .query
+            .filter(Venue.num_upcoming_shows > 0)
+            .with_entities(Venue.city, Venue.state)
+            .group_by(Venue.city, Venue.state)
+            .all()
+    )
+
+    territories_and_venues = []
+
+    for territory in territories:
+        territory_venues = (
+            Venue
+                .query
+                .filter(Venue.city == territory.city, Venue.num_upcoming_shows > 0)
+                .all()
+        )
+
+        territories_and_venues.append(
+            {
+                "city": territory.city,
+                "state": territory.state,
+                "venues": territory_venues,
+            }
+        )
+
+    return render_template('pages/venues.html', areas=territories_and_venues)
 
 
 @app.route('/venues/search', methods=['POST'])
@@ -438,17 +445,22 @@ def shows():
         artist = Artist.query.filter(Artist.id == show.artist_id).one()
         venue = Venue.query.filter(Venue.id == show.venue_id).one()
 
-        upcoming_shows.append(
-            {
-                "id": show.id,
-                "start_time": show.start_time.strftime("%m/%d/%Y, %H:%M:%S"),
-                "venue": venue.id,
-                "venue_name": venue.name,
-                "artist": artist.id,
-                "artist_name": artist.name,
-                "artist_image_link": artist.image_link
-            }
-        )
+        base_start_datetime = show.start_time.strftime("%d/%m/%Y%H:%M:%S")
+        formatted_start_datetime = datetime.strptime(base_start_datetime, "%d/%m/%Y%H:%M:%S")
+        is_upcoming_show = formatted_start_datetime > datetime.now()
+
+        if is_upcoming_show:
+            upcoming_shows.append(
+                {
+                    "id": show.id,
+                    "start_time": show.start_time.strftime("%m/%d/%Y, %H:%M:%S"),
+                    "venue": venue.id,
+                    "venue_name": venue.name,
+                    "artist": artist.id,
+                    "artist_name": artist.name,
+                    "artist_image_link": artist.image_link
+                }
+            )
 
     return render_template('pages/shows.html', shows=upcoming_shows)
 

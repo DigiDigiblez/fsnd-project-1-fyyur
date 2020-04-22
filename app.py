@@ -422,23 +422,34 @@ def edit_artist_submission(artist_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
-    form = VenueForm()
-    venue = {
-        "id": 1,
-        "name": "The Musical Hop",
-        "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-        "address": "1015 Folsom Street",
-        "city": "San Francisco",
-        "state": "CA",
-        "phone": "123-123-1234",
-        "website": "https://www.themusicalhop.com",
-        "facebook_link": "https://www.facebook.com/TheMusicalHop",
-        "seeking_talent": True,
-        "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-        "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-    }
-    # TODO: populate form with values from venue with ID <venue_id>
-    return render_template('forms/edit_venue.html', form=form, venue=venue)
+    # ✅ TODO: populate form with values from venue with ID <venue_id>
+    venue = Venue.query.filter(Venue.id == venue_id).one_or_none()
+
+    # Render 404 page if the venue is not found, and flash the user to make them aware
+    if venue is None:
+        flash('ERROR: venue with ID ' + str(venue) + ' does not exist!')
+        return render_template('errors/404.html'), 404
+
+    # Otherwise continue to render the venue edit form, populated with existing data
+    else:
+        existing_venue_data = {
+            "id": venue.id,
+            "name": venue.name,
+            "city": venue.city,
+            "state": venue.state,
+            "phone": venue.phone,
+            "image_link": venue.image_link,
+            "genres": ','.join(venue.genres),
+            "address": venue.address,
+            "website": venue.website,
+            "facebook_link": venue.facebook_link,
+            "seeking_talent": venue.seeking_talent,
+            "seeking_description": venue.seeking_description
+        }
+
+        form = VenueForm(data=existing_venue_data)
+
+    return render_template('forms/edit_venue.html', form=form, venue=existing_venue_data)
 
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])

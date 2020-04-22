@@ -351,7 +351,6 @@ def show_artist(artist_id):
 def edit_artist(artist_id):
     # ✅ TODO: populate form with fields from artist with ID <artist_id>
     artist = Artist.query.filter(Artist.id == artist_id).one_or_none()
-    form = None
 
     # Render 404 page if the artist is not found, and flash the user to make them aware
     if artist is None:
@@ -381,8 +380,42 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-    # TODO: take values from the form submitted, and update existing
-    # artist record with ID <artist_id> using the new attributes
+    # ✅ TODO: take values from the form submitted, and update existing
+    #       artist record with ID <artist_id> using the new attributes
+    artist = Artist.query.filter(Artist.id == artist_id).one()
+    artist_data = ArtistForm(request.form)
+
+    error = False
+    try:
+        # Update existing data with new form data
+        artist.name = artist_data.name.data,
+        artist.city = artist_data.city.data,
+        artist.state = artist_data.state.data,
+        artist.phone = artist_data.phone.data,
+        artist.genres = ','.join(artist_data.genres.data),
+        artist.website = artist_data.website.data,
+        artist.facebook_link = artist_data.facebook_link.data,
+        artist.image_link = artist_data.image_link.data,
+        artist.seeking_description = artist_data.seeking_description.data,
+
+        is_seeking = False
+        if artist_data.seeking_venue == "True":
+            is_seeking = True
+
+        artist.seeking_talent = is_seeking,
+
+        # Update db record data for artist with new form data
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+    finally:
+        if not error:
+            flash('Artist ' + artist_data.name.data + ' was successfully updated!')
+        else:
+            # ✅ TODO: on unsuccessful db update, flash an error instead.
+            flash('An error occurred. Artist ' + artist_data.name.data + ' could not be updated.')
+        db.session.close()
 
     return redirect(url_for('show_artist', artist_id=artist_id))
 

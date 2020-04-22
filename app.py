@@ -12,7 +12,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_migrate import Migrate
 from flask_moment import Moment
 
-from forms import ShowForm
+from forms import ShowForm, VenueForm
 from models.models import Show
 from models.models import Venue
 from models.models import Artist
@@ -217,14 +217,41 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-    # TODO: insert form data as a new Venue record in the db, instead
-    # TODO: modify data to be the data object returned from db insertion
+    # ❌ TODO: insert form data as a new Venue record in the db, instead
+    # ❌ TODO: modify data to be the data object returned from db insertion
+    venue_data = VenueForm(request.form)
 
-    # on successful db insert, flash success
-    flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-    # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+    error = False
+    try:
+        # Create new db Venue record
+        new_venue = Venue(
+            name=venue_data.name.data,
+            city=venue_data.city.data,
+            state=venue_data.state.data,
+            address=venue_data.address.data,
+            phone=venue_data.phone.data,
+            genres=','.join(venue_data.genres.data),
+            website=venue_data.website.data,
+            facebook_link=venue_data.facebook_link.data,
+            image_link=venue_data.image_link.data,
+            seeking_talent=bool(venue_data.seeking_talent.data),
+            seeking_description=venue_data.seeking_description.data,
+            num_upcoming_shows=33  # TODO-resolve
+        )
+
+        db.session.add(new_venue)
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+    finally:
+        db.session.close()
+        if not error:
+            flash('Venue \'' + venue_data.name.data + '\' was successfully listed!')
+        else:
+            # ✅ TODO: on unsuccessful db insert, flash an error instead.
+            flash('An error occurred. Venue \'' + venue_data.name.data + '\' could not be listed.')
+
     return render_template('pages/home.html')
 
 
@@ -467,12 +494,12 @@ def create_show_submission():
     # ✅ TODO: insert form data as a new Show record in the db, instead
     error = False
     try:
-        # Retrieving form data
+        # Retrieve form data
         artist_id = request.form.get("artist_id")
         venue_id = request.form.get("venue_id")
         start_time = request.form.get("start_time")
 
-        # Creating new db Show record.
+        # Create new db Show record
         new_show = Show(
             artist_id=artist_id,
             venue_id=venue_id,

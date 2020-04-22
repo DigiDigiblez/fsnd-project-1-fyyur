@@ -18,6 +18,9 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
 
+    def __repr__(self):
+        return '<Artist %r>' % self
+
 
 # *************************************************************************************
 # *************************************************************************************
@@ -42,6 +45,9 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(500))
     num_upcoming_shows = db.Column(db.Integer)
 
+    def __repr__(self):
+        return '<Venue %r>' % self
+
 
 # *************************************************************************************
 # *************************************************************************************
@@ -63,3 +69,6 @@ class Show(db.Model):
     # Relationships
     venue = db.relationship('Venue', backref=db.backref('shows', cascade='all, delete'))
     artist = db.relationship('Artist', backref=db.backref('shows', cascade='all, delete'))
+
+    def __repr__(self):
+        return '<Show %r>' % self

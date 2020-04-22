@@ -3,6 +3,7 @@
 # ----------------------------------------------------------------------------#
 
 import logging
+import sys
 from datetime import datetime
 from logging import Formatter, FileHandler
 
@@ -64,12 +65,9 @@ def index():
 
 @app.route('/venues')
 def venues():
-    # ✅ TODO: replace with real venues data.
-    #       num_shows should be aggregated based on number of upcoming shows per venue.
     territories = (
         Venue
             .query
-            .filter(Venue.num_upcoming_shows > 0)
             .with_entities(Venue.city, Venue.state)
             .group_by(Venue.city, Venue.state)
             .all()
@@ -81,7 +79,6 @@ def venues():
         territory_venues = (
             Venue
                 .query
-                .filter(Venue.city == territory.city, Venue.num_upcoming_shows > 0)
                 .all()
         )
 
@@ -195,10 +192,6 @@ def create_venue_submission():
     # ✅ TODO: modify data to be the data object returned from db insertion
     venue_data = VenueForm(request.form)
 
-    is_seeking = False
-    if venue_data.seeking_talent.data == "True":
-        is_seeking = True
-
     error = False
     try:
         # Create new db Venue record
@@ -212,7 +205,7 @@ def create_venue_submission():
             website=venue_data.website.data,
             facebook_link=venue_data.facebook_link.data,
             image_link=venue_data.image_link.data,
-            seeking_talent=is_seeking,
+            seeking_talent=venue_data.seeking_talent.data,
             seeking_description=venue_data.seeking_description.data,
         )
 
@@ -221,6 +214,7 @@ def create_venue_submission():
     except:
         error = True
         db.session.rollback()
+        print(sys.exc_info())
     finally:
         db.session.close()
         if not error:
@@ -396,19 +390,15 @@ def edit_artist_submission(artist_id):
         artist.website = artist_data.website.data,
         artist.facebook_link = artist_data.facebook_link.data,
         artist.image_link = artist_data.image_link.data,
+        artist.seeking_venue = artist_data.seeking_venue.data,
         artist.seeking_description = artist_data.seeking_description.data,
-
-        is_seeking = False
-        if artist_data.seeking_venue == "True":
-            is_seeking = True
-
-        artist.seeking_talent = is_seeking,
 
         # Update db record data for artist with new form data
         db.session.commit()
     except:
         error = True
         db.session.rollback()
+        print(sys.exc_info())
     finally:
         if not error:
             flash('Artist ' + artist_data.name.data + ' was successfully updated!')
@@ -471,19 +461,15 @@ def edit_venue_submission(venue_id):
         venue.website = venue_data.website.data,
         venue.facebook_link = venue_data.facebook_link.data,
         venue.image_link = venue_data.image_link.data,
+        venue.seeking_talent = venue_data.seeking_talent.data,
         venue.seeking_description = venue_data.seeking_description.data,
-
-        is_seeking = False
-        if venue_data.seeking_talent == "True":
-            is_seeking = True
-
-        # venue.seeking_talent = is_seeking,
 
         # Update db record data for venue with new form data
         db.session.commit()
     except:
         error = True
         db.session.rollback()
+        print(sys.exc_info())
     finally:
         if not error:
             flash('Venue ' + venue_data.name.data + ' was successfully updated!')
@@ -512,10 +498,6 @@ def create_artist_submission():
 
     error = False
     try:
-        is_seeking = False
-        if artist_data.seeking_venue.data == "True":
-            is_seeking = True
-
         # Create new db Show record
         new_artist = Artist(
             name=artist_data.name.data,
@@ -526,7 +508,7 @@ def create_artist_submission():
             genres=','.join(artist_data.genres.data),
             website=artist_data.website.data,
             facebook_link=artist_data.facebook_link.data,
-            seeking_venue=is_seeking,
+            seeking_venue=artist_data.seeking_venue.data,
             seeking_description=artist_data.seeking_description.data
         )
 
@@ -535,6 +517,7 @@ def create_artist_submission():
     except:
         error = True
         db.session.rollback()
+        print(sys.exc_info())
     finally:
         if not error:
             flash('Artist ' + artist_data.name.data + ' was successfully listed!')
@@ -606,6 +589,7 @@ def create_show_submission():
     except:
         error = True
         db.session.rollback()
+        print(sys.exc_info())
     finally:
         if not error:
             flash("Show was successfully listed!")

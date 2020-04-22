@@ -487,9 +487,9 @@ def shows():
                 {
                     "id": show.id,
                     "start_time": show.start_time.strftime("%m/%d/%Y, %H:%M:%S"),
-                    "venue": venue.id,
+                    "venue_id": venue.id,
                     "venue_name": venue.name,
-                    "artist": artist.id,
+                    "artist_id": artist.id,
                     "artist_name": artist.name,
                     "artist_image_link": artist.image_link
                 }

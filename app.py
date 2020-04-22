@@ -126,12 +126,12 @@ def show_venue(venue_id):
     # ✅ TODO: replace with real venue data from the venues table, using venue_id
     venue = Venue.query.filter(Venue.id == venue_id).one_or_none()
 
-    # Render 404 page if the venue is not found, and flash the user to make them aware.
+    # Render 404 page if the venue is not found, and flash the user to make them aware
     if venue is None:
         flash('ERROR: venue with ID ' + str(venue_id) + ' does not exist!')
         return render_template('errors/404.html'), 404
 
-    # Otherwise continue to render the venue page and information.
+    # Otherwise continue to render the venue page and information
     else:
         shows = Show.query.filter(Show.venue_id == venue_id).all()
 
@@ -235,10 +235,10 @@ def create_venue_submission():
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
     # TODO: Complete this endpoint for taking a venue_id, and using
-    # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    #   SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
-    # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-    # clicking that button delete it from the db then redirect the user to the homepage
+    # 🌟 BONUS CHALLENGE: TODO: Implement a button to delete a Venue on a Venue Page, have it so that
+    #                      clicking that button delete it from the db then redirect the user to the homepage
     return None
 
 
@@ -349,22 +349,34 @@ def show_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
-    form = ArtistForm()
-    artist = {
-        "id": 4,
-        "name": "Guns N Petals",
-        "genres": ["Rock n Roll"],
-        "city": "San Francisco",
-        "state": "CA",
-        "phone": "326-123-5000",
-        "website": "https://www.gunsnpetalsband.com",
-        "facebook_link": "https://www.facebook.com/GunsNPetals",
-        "seeking_venue": True,
-        "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-        "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-    }
-    # TODO: populate form with fields from artist with ID <artist_id>
-    return render_template('forms/edit_artist.html', form=form, artist=artist)
+    # ✅ TODO: populate form with fields from artist with ID <artist_id>
+    artist = Artist.query.filter(Artist.id == artist_id).one_or_none()
+    form = None
+
+    # Render 404 page if the artist is not found, and flash the user to make them aware
+    if artist is None:
+        flash('ERROR: artist with ID ' + str(artist) + ' does not exist!')
+        return render_template('errors/404.html'), 404
+
+    # Otherwise continue to render the artist edit form, populated with existing data
+    else:
+        existing_artist_data = {
+            "id": artist.id,
+            "name": artist.name,
+            "city": artist.city,
+            "state": artist.state,
+            "phone": artist.phone,
+            "image_link": artist.image_link,
+            "genres": ','.join(artist.genres),
+            "website": artist.website,
+            "facebook_link": artist.facebook_link,
+            "seeking_venue": artist.seeking_venue,
+            "seeking_description": artist.seeking_description
+        }
+
+        form = ArtistForm(data=existing_artist_data)
+
+        return render_template('forms/edit_artist.html', form=form, artist=existing_artist_data)
 
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])

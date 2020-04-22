@@ -43,6 +43,7 @@ class Venue(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
+    num_upcoming_shows = db.Column(db.Integer)
 
     def __repr__(self):
         return '<Venue %r>' % self

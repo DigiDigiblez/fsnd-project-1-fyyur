@@ -259,19 +259,27 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-    # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-    # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-    # search for "band" should return "The Wild Sax Band".
+    # ✅ TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+    search_input = request.form.get("search_term", None)
+
+    formatted_input = "%{}%".format(search_input)
+
+    fuzzy_matches = Artist.query.filter(
+        Artist.name.ilike(formatted_input)
+    ).all()
+
+    fuzzy_matches_count = len(fuzzy_matches)
+
     response = {
-        "count": 1,
-        "data": [{
-            "id": 4,
-            "name": "Guns N Petals",
-            "num_upcoming_shows": 0,
-        }]
+        "count": fuzzy_matches_count,
+        "data": fuzzy_matches
     }
-    return render_template('pages/search_artists.html', results=response,
-                           search_term=request.form.get('search_term', ''))
+
+    return render_template(
+        'pages/search_artists.html',
+        results=response,
+        search_term=request.form.get('search_term', '')
+    )
 
 
 @app.route('/artists/<int:artist_id>')

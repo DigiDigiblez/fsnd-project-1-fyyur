@@ -12,7 +12,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_migrate import Migrate
 from flask_moment import Moment
 
-from forms import ShowForm, VenueForm
+from forms import ShowForm, VenueForm, ArtistForm
 from models.models import Show
 from models.models import Venue
 from models.models import Artist
@@ -437,14 +437,53 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-    # called upon submitting the new artist listing form
-    # TODO: insert form data as a new Venue record in the db, instead
-    # TODO: modify data to be the data object returned from db insertion
+    # ✅ TODO: insert form data as a new Venue record in the db, instead
+    # ✅ TODO: modify data to be the data object returned from db insertion
+    error = False
+    try:
+        # Retrieve form data
+        name = request.form.get("name")
+        city = request.form.get("city")
+        state = request.form.get("state")
+        phone = request.form.get("phone")
+        image_link = request.form.get("image_link")
+        genres = request.form.getlist("genres")
+        website = request.form.get("website")
+        facebook_link = request.form.get("facebook_link")
+        seeking_venue = request.form.get("seeking_venue")
+        seeking_description = request.form.get("seeking_description")
 
-    # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+        is_seeking = False
+        if seeking_venue == "True":
+            is_seeking = True
+
+        # Create new db Show record
+        new_artist = Artist(
+            name=name,
+            city=city,
+            state=state,
+            phone=phone,
+            image_link=image_link,
+            genres=','.join(genres),
+            website=website,
+            facebook_link=facebook_link,
+            seeking_venue=is_seeking,
+            seeking_description=seeking_description
+        )
+
+        db.session.add(new_artist)
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+    finally:
+        if not error:
+            flash('Artist ' + name + ' was successfully listed!')
+        else:
+            # ✅ TODO: on unsuccessful db insert, flash an error instead.
+            flash('An error occurred. Artist ' + name + ' could not be listed.')
+        db.session.close()
+
     return render_template('pages/home.html')
 
 

@@ -4,7 +4,7 @@ from models.database import db
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
@@ -29,7 +29,7 @@ class Artist(db.Model):
 class Venue(db.Model):
     __tablename__ = 'Venue'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
@@ -57,7 +57,7 @@ class Venue(db.Model):
 class Show(db.Model):
     __tablename__ = 'Show'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     # ✅ TODO: Implement Show and Venue models, and complete ...
     #  ... all model relationships and properties, as a database migration.
     start_time = db.Column(db.DateTime)

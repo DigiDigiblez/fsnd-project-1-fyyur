@@ -10,7 +10,7 @@ from logging import Formatter, FileHandler
 
 import babel.dates
 import dateutil.parser
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_migrate import Migrate
 from flask_moment import Moment
 
@@ -139,11 +139,10 @@ def show_venue(venue_id):
             formatted_start_datetime = datetime.strptime(base_start_datetime, "%d/%m/%Y%H:%M:%S")
             is_upcoming_show = formatted_start_datetime > datetime.now()
 
-            artists = Artist.query.filter(Artist.id == show.venue_id).all()
+            artists = Artist.query.filter(Artist.id == show.artist_id).all()
 
             for artist in artists:
-
-                venue_data = {
+                artist_data = {
                     "artist_id": artist.id,
                     "artist_name": artist.name,
                     "artist_image_link": artist.image_link,
@@ -151,9 +150,9 @@ def show_venue(venue_id):
                 }
 
                 if is_upcoming_show:
-                    upcoming_show_data.append(venue_data)
+                    upcoming_show_data.append(artist_data)
                 else:
-                    past_show_data.append(venue_data)
+                    past_show_data.append(artist_data)
 
         venue_data = {
             "id": venue.id,
@@ -228,11 +227,17 @@ def create_venue_submission():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-    # TODO: Complete this endpoint for taking a venue_id, and using
-    #   SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    try:
+        # Delete the venue by it's id & update the db
+        venue = Venue.query.get(venue_id)
+        db.session.delete(venue)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
 
-    # 🌟 BONUS CHALLENGE: TODO: Implement a button to delete a Venue on a Venue Page, have it so that
-    #                      clicking that button delete it from the db then redirect the user to the homepage
     return None
 
 
@@ -302,7 +307,6 @@ def show_artist(artist_id):
             venues = Venue.query.filter(Venue.id == show.venue_id).all()
 
             for venue in venues:
-
                 venue_data = {
                     "venue_id": venue.id,
                     "venue_name": venue.name,
@@ -486,6 +490,8 @@ def create_artist_submission():
 
     error = False
     try:
+        formattedEnumGenres = re.sub('[^A-Za-z0-9&+\- ]+', '', '+'.join(artist_data.genres.data)).replace('+', ', ')
+
         # Create new db Show record
         new_artist = Artist(
             name=artist_data.name.data,
@@ -493,7 +499,7 @@ def create_artist_submission():
             state=artist_data.state.data,
             phone=artist_data.phone.data,
             image_link=artist_data.image_link.data,
-            genres=','.join(artist_data.genres.data),
+            genres=formattedEnumGenres,
             website=artist_data.website.data,
             facebook_link=artist_data.facebook_link.data,
             seeking_venue=artist_data.seeking_venue.data,

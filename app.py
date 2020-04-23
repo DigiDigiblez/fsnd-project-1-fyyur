@@ -57,8 +57,8 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-    newest_artists: [] = Artist.query.order_by(Artist.id).limit(10).all()
-    newest_venues: [] = Venue.query.order_by(Venue.id).limit(10).all()
+    newest_artists: [] = Artist.query.order_by(db.desc(Artist.id)).limit(10).all()
+    newest_venues: [] = Venue.query.order_by(db.desc(Venue.id)).limit(10).all()
 
     return render_template(
         'pages/home.html',
@@ -253,8 +253,6 @@ def create_venue_submission():
             seeking_description=venue_data.seeking_description.data,
         )
 
-        print(venue_data.genres)
-
         db.session.add(new_venue)
         db.session.commit()
     except:
@@ -264,11 +262,11 @@ def create_venue_submission():
     finally:
         db.session.close()
         if not error:
-            flash('Venue \'' + venue_data.name.data + '\' was successfully listed!')
+            flash('Venue ' + venue_data.name.data + ' was successfully listed!')
         else:
-            flash('An error occurred. Venue \'' + venue_data.name.data + '\' could not be listed.')
+            flash('An error occurred. Venue ' + venue_data.name.data + ' could not be listed.')
 
-    return render_template('pages/home.html')
+    return redirect(url_for('index'))
 
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
@@ -603,7 +601,7 @@ def create_artist_submission():
             flash('An error occurred. Artist ' + artist_data.name.data + ' could not be listed.')
         db.session.close()
 
-    return render_template('pages/home.html')
+    return redirect(url_for('index'))
 
 
 #  Shows
@@ -671,7 +669,7 @@ def create_show_submission():
             flash("An error occurred. Show could not be listed.")
         db.session.close()
 
-    return render_template('pages/home.html')
+    return redirect(url_for('index'))
 
 
 @app.errorhandler(404)

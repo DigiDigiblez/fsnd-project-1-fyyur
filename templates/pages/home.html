@@ -15,6 +15,7 @@
 
 	.dataset li {
 		clear: both;
+		margin-bottom: 0.5rem;
 	}
 
 	.dataset li a {
@@ -24,6 +25,10 @@
 	.fa-music,
 	.fa-user {
 		margin: auto 1rem auto auto;
+	}
+
+	.item h5 {
+		margin-bottom: 0;
 	}
 
 </style>
@@ -50,7 +55,7 @@
 					{% for artist in newest_artists %}
 						<li>
 							<a href="/artists/{{ artist.id }}">
-								<i class="fas fa-music"></i>
+								<i class="fas fa-user"></i>
 								<div class="item">
 									<h5>{{ artist.name }}</h5>
 								</div>
@@ -72,7 +77,7 @@
 					{% for venue in newest_venues %}
 						<li>
 							<a href="/venues/{{ venue.id }}">
-								<i class="fas fa-user"></i>
+								<i class="fas fa-music"></i>
 								<div class="item">
 									<h5>{{ venue.name }}</h5>
 								</div>

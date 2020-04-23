@@ -29,9 +29,7 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 
-# ✅ TODO: connect to a local postgresql database
 db.init_app(app)
-
 Migrate(app, db)
 
 
@@ -57,6 +55,7 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
+    # Retrieve the 10 newest artists and venues to display on the homepage.
     newest_artists: [] = Artist.query.order_by(db.desc(Artist.id)).limit(10).all()
     newest_venues: [] = Venue.query.order_by(db.desc(Venue.id)).limit(10).all()
 
@@ -88,6 +87,7 @@ def venues():
             Venue
                 .query
                 .filter(Venue.city == territory.city)
+                .filter(Venue.state == territory.state)
                 .all()
         )
 

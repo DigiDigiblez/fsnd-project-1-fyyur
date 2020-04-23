@@ -1,6 +1,32 @@
 {% extends 'layouts/main.html' %}
 {% block title %}Fyyur{% endblock %}
 {% block content %}
+<style>
+	.dataset-wrapper {
+		margin-bottom: 3rem;
+	}
+
+	.dataset {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		width: 300px;
+	}
+
+	.dataset li {
+		clear: both;
+	}
+
+	.dataset li a {
+		display: inline-flex;
+	}
+
+	.fa-music,
+	.fa-user {
+		margin: auto 1rem auto auto;
+	}
+
+</style>
 <div class="row">
 	<div class="col-sm-6">
 		<h1>Fyyur 🔥</h1>
@@ -17,6 +43,49 @@
 		<h3>
 			<a href="/shows/create"><button class="btn btn-default btn-lg">Post a show</button></a>
 		</h3>
+		<div class="dataset-wrapper">
+			<p class="lead">Newest artists listed</p>
+			<ul class="dataset">
+				{% if newest_artists|length > 0 %}
+					{% for artist in newest_artists %}
+						<li>
+							<a href="/artists/{{ artist.id }}">
+								<i class="fas fa-music"></i>
+								<div class="item">
+									<h5>{{ artist.name }}</h5>
+								</div>
+							</a>
+						</li>
+					{% endfor %}
+
+				{% else %}
+					<h5>None yet 😢</h5>
+				
+				{% endif %}
+			</ul>
+		</div>
+
+		<div class="dataset-wrapper">
+		<p class="lead">Newest venues listed</p>
+			<ul class="dataset">
+				{% if newest_venues|length > 0 %}
+					{% for venue in newest_venues %}
+						<li>
+							<a href="/venues/{{ venue.id }}">
+								<i class="fas fa-user"></i>
+								<div class="item">
+									<h5>{{ venue.name }}</h5>
+								</div>
+							</a>
+						</li>
+					{% endfor %}
+
+				{% else %}
+					<h5>None yet 😢</h5>
+
+				{% endif %}
+			</ul>
+		</div>
 	</div>
 	<div class="col-sm-6 hidden-sm hidden-xs">
 		<img id="front-splash" src="{{ url_for('static',filename='img/front-splash.jpg') }}" alt="Front Photo of Musical Band" />

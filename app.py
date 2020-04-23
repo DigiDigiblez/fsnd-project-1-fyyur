@@ -57,7 +57,14 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-    return render_template('pages/home.html')
+    newest_artists: [] = Artist.query.order_by(Artist.id).limit(10).all()
+    newest_venues: [] = Venue.query.order_by(Venue.id).limit(10).all()
+
+    return render_template(
+        'pages/home.html',
+        newest_artists=newest_artists,
+        newest_venues=newest_venues
+    )
 
 
 # ----------------------------------------------------------------------------#
@@ -80,6 +87,7 @@ def venues():
         territory_venues = (
             Venue
                 .query
+                .filter(Venue.city == territory.city)
                 .all()
         )
 

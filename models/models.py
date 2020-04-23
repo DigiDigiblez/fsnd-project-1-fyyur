@@ -16,8 +16,6 @@ class Artist(db.Model):
     genres: str = db.Column(db.String(120), nullable=False)
     image_link: str = db.Column(db.String(500), nullable=True)
     facebook_link: str = db.Column(db.String(120), nullable=True)
-    # ✅ TODO: Implement Show and Artist models, and complete ...
-    #  ... all model relationships and properties, as a database migration.
     website: str = db.Column(db.String(120), nullable=True)
     seeking_venue: bool = db.Column(db.Boolean, nullable=False)
     seeking_description: str = db.Column(db.String(500), nullable=True)
@@ -37,8 +35,6 @@ class Venue(db.Model):
     state: str = db.Column(db.String(120), nullable=False)
     phone: str = db.Column(db.String(120), nullable=True)
     image_link: str = db.Column(db.String(500), nullable=True)
-    # ✅ TODO: Implement Show and Venue models, and complete ...
-    #  ... all model relationships and properties, as a database migration.
     genres: str = db.Column(db.String(120), nullable=False)
     address: str = db.Column(db.String(120), nullable=False)
     website: str = db.Column(db.String(120), nullable=True)
@@ -57,8 +53,6 @@ class Show(db.Model):
     __tablename__ = 'Show'
 
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # ✅ TODO: Implement Show and Venue models, and complete ...
-    #  ... all model relationships and properties, as a database migration.
     start_time: datetime = db.Column(db.DateTime)
 
     # Foreign keys

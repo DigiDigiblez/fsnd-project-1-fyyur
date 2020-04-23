@@ -10,15 +10,15 @@ from logging import Formatter, FileHandler
 
 import babel.dates
 import dateutil.parser
-from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
+from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_migrate import Migrate
 from flask_moment import Moment
 
 from forms import ShowForm, VenueForm, ArtistForm
+from models.database import db
+from models.models import Artist
 from models.models import Show
 from models.models import Venue
-from models.models import Artist
-from models.database import db
 
 # ----------------------------------------------------------------------------#
 # App Config.
@@ -106,17 +106,55 @@ def venues():
 def search_venues():
     search_input = request.form.get("search_term", None)
 
-    formatted_input = "%{}%".format(search_input)
+    # Remove all non-alphanumeric chars for a clean search
+    search_items = search_input.split(',')
 
-    fuzzy_matches = Venue.query.filter(
-        Venue.name.ilike(formatted_input)
-    ).all()
+    for item in search_items:
+        # Format each comma-split lemma
+        formatted_input = "%{}%".format(item.strip())
 
-    fuzzy_matches_count = len(fuzzy_matches)
+        # Find all fuzzy name matches
+        fuzzy_name_matches = (
+            Venue
+                .query
+                .filter(Venue.name.ilike(formatted_input))
+                .all()
+        )
+
+        # Find all fuzzy city matches
+        fuzzy_city_matches = (
+            Venue
+                .query
+                .filter(Venue.city.ilike(formatted_input))
+                .all()
+        )
+
+        # Find all fuzzy state matches
+        fuzzy_state_matches = (
+            Venue
+                .query
+                .filter(Venue.state.ilike(formatted_input))
+                .all()
+        )
+
+    # Compile all fuzzy matches into one set.
+    all_fuzzy_matches = []
+
+    for match in fuzzy_name_matches:
+        if match not in all_fuzzy_matches:
+            all_fuzzy_matches.append(match)
+
+    for match in fuzzy_state_matches:
+        if match not in all_fuzzy_matches:
+            all_fuzzy_matches.append(match)
+
+    for match in fuzzy_city_matches:
+        if match not in all_fuzzy_matches:
+            all_fuzzy_matches.append(match)
 
     response = {
-        "count": fuzzy_matches_count,
-        "data": fuzzy_matches
+        "count": len(all_fuzzy_matches),
+        "data": all_fuzzy_matches
     }
 
     return render_template(
@@ -271,17 +309,55 @@ def artists():
 def search_artists():
     search_input = request.form.get("search_term", None)
 
-    formatted_input = "%{}%".format(search_input)
+    # Remove all non-alphanumeric chars for a clean search
+    search_items = search_input.split(',')
 
-    fuzzy_matches = Artist.query.filter(
-        Artist.name.ilike(formatted_input)
-    ).all()
+    for item in search_items:
+        # Format each comma-split lemma
+        formatted_input = "%{}%".format(item.strip())
 
-    fuzzy_matches_count = len(fuzzy_matches)
+        # Find all fuzzy name matches
+        fuzzy_name_matches = (
+            Artist
+                .query
+                .filter(Artist.name.ilike(formatted_input))
+                .all()
+        )
+
+        # Find all fuzzy city matches
+        fuzzy_city_matches = (
+            Artist
+                .query
+                .filter(Artist.city.ilike(formatted_input))
+                .all()
+        )
+
+        # Find all fuzzy state matches
+        fuzzy_state_matches = (
+            Artist
+                .query
+                .filter(Artist.state.ilike(formatted_input))
+                .all()
+        )
+
+    # Compile all fuzzy matches into one set.
+    all_fuzzy_matches = []
+
+    for match in fuzzy_name_matches:
+        if match not in all_fuzzy_matches:
+            all_fuzzy_matches.append(match)
+
+    for match in fuzzy_state_matches:
+        if match not in all_fuzzy_matches:
+            all_fuzzy_matches.append(match)
+
+    for match in fuzzy_city_matches:
+        if match not in all_fuzzy_matches:
+            all_fuzzy_matches.append(match)
 
     response = {
-        "count": fuzzy_matches_count,
-        "data": fuzzy_matches
+        "count": len(all_fuzzy_matches),
+        "data": all_fuzzy_matches
     }
 
     return render_template(
